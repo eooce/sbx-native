@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meine Website</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:#f4f6f8;
+            color:#333;
+            line-height:1.6;
+        }
+
+        header{
+            background:#111827;
+            color:white;
+            padding:20px 10%;
+            position:sticky;
+            top:0;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        nav a{
+            color:white;
+            margin-left:20px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        section{
+            padding:80px 10%;
+        }
+
+        .hero{
+            background:linear-gradient(135deg,#2563eb,#1e40af);
+            color:white;
+            text-align:center;
+        }
+
+        .hero h1{
+            font-size:48px;
+            margin-bottom:20px;
+        }
+
+        .hero p{
+            font-size:20px;
+            max-width:800px;
+            margin:0 auto;
+        }
+
+        .btn{
+            display:inline-block;
+            margin-top:20px;
+            padding:12px 28px;
+            background:white;
+            color:#1e40af;
+            border-radius:8px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:20px;
+        }
+
+        .card{
+            background:white;
+            padding:25px;
+            border-radius:12px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .card h3{
+            color:#1e40af;
+            margin-bottom:10px;
+        }
+
+        .page-title{
+            font-size:36px;
+            margin-bottom:20px;
+        }
+
+        footer{
+            background:#111827;
+            color:white;
+            text-align:center;
+            padding:20px;
+            margin-top:40px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>Meine Website</h2>
+    <nav>
+        <a href="#seite1">Seite 1</a>
+        <a href="#seite2">Seite 2</a>
+    </nav>
+</header>
+
+<!-- ===================== SEITE 1 ===================== -->
+
+<section id="seite1" class="hero">
+    <h1>Willkommen auf meiner Website</h1>
+    <p>
+        Dies ist eine moderne, responsive Webseite in deutscher Sprache.
+        Sie zeigt ein Beispiel für ein zweigeteiltes Layout innerhalb einer einzigen HTML-Datei.
+        Ideal für Präsentationen, Projekte oder Lernzwecke im Bereich Webentwicklung.
+    </p>
+    <a class="btn" href="#seite2">Weiter zu Seite 2</a>
+</section>
+
+<section>
+    <h2 class="page-title">Unsere Vorteile</h2>
+
+    <div class="grid">
+
+        <div class="card">
+            <h3>Schnelligkeit</h3>
+            <p>
+                Moderne Webseiten müssen schnell laden.
+                Durch optimierten Code und minimale Ressourcen erreichen wir eine hohe Performance.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Sicherheit</h3>
+            <p>
+                Sicherheit ist ein zentraler Bestandteil moderner Webentwicklung.
+                Wir verwenden bewährte Methoden zum Schutz von Daten und Nutzern.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Responsives Design</h3>
+            <p>
+                Die Darstellung passt sich automatisch an verschiedene Bildschirmgrößen an,
+                egal ob Smartphone, Tablet oder Desktop.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<!-- ===================== SEITE 2 ===================== -->
+
+<section id="seite2" style="background:#eef2ff;">
+    <h2 class="page-title">Über uns</h2>
+
+    <p>
+        Wir sind ein Team aus Entwicklern, Designern und Technikbegeisterten,
+        die moderne Weblösungen erstellen. Unser Fokus liegt auf Benutzerfreundlichkeit,
+        Leistung und sauberem Code.
+    </p>
+
+    <p>
+        In den letzten Jahren haben wir zahlreiche Projekte umgesetzt,
+        darunter Unternehmenswebseiten, interne Verwaltungssysteme und kleine Web-Apps.
+        Jede Lösung wird individuell auf die Bedürfnisse unserer Kunden angepasst.
+    </p>
+
+    <p>
+        Technologie entwickelt sich ständig weiter.
+        Deshalb legen wir großen Wert auf kontinuierliches Lernen und die Anpassung
+        an neue Standards wie HTML5, CSS3 und moderne JavaScript-Frameworks.
+    </p>
+
+    <div class="grid" style="margin-top:30px;">
+
+        <div class="card">
+            <h3>Unsere Mission</h3>
+            <p>
+                Digitale Lösungen zu schaffen, die einfach, effektiv und nachhaltig sind.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Unsere Vision</h3>
+            <p>
+                Eine digitale Welt, in der Technologie Menschen unterstützt und nicht kompliziert macht.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Unsere Werte</h3>
+            <p>
+                Qualität, Transparenz und langfristige Zusammenarbeit stehen bei uns im Mittelpunkt.
+            </p>
+        </div>
+
+    </div>
+</section>
+
+<section>
+    <h2 class="page-title">Kontakt</h2>
+
+    <p>
+        Wenn Sie Fragen haben oder mit uns zusammenarbeiten möchten,
+        kontaktieren Sie uns jederzeit.
+    </p>
+
+    <p><strong>E-Mail:</strong> kittshy@excellence.com</p>
+    <p><strong>Telefon:</strong> +49 852756973</p>
+    <p><strong>Adresse:</strong> Berlin, Deutschland</p>
+</section>
+
+<footer>
+    © 2026 Meine Website. Alle Rechte vorbehalten.
+</footer>
+
+</body>
+</html>
