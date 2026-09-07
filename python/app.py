@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # 导入基础模块
 import os, sys, subprocess
@@ -218,22 +219,31 @@ def download_library(url: str, filename: str, expected_sha256: str = None) -> st
     
     os.makedirs(runtimeFilePath, exist_ok=True)
     tmp = os.path.join(runtimeFilePath, f'{filename}.download')
-    
-    log(f"Downloading {url} -> {target}")
-    
-    response = requests.get(url, stream=True, timeout=180)
-    response.raise_for_status()
-    
-    with open(tmp, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            f.write(chunk)
-    
-    if expected_sha256 and sha256_file(tmp) != expected_sha256:
-        raise Exception(f"SHA-256 mismatch for {tmp}")
-    
-    os.rename(tmp, target)
-    os.chmod(target, 0o755)
-    return target
+    fallback_url = url.replace(f'{ARCH}.oooen.com', f'{ARCH}.ssss.nyc.mn')
+    last_error = None
+    for candidate_url in (url, fallback_url):
+        try:
+            log(f"Downloading -> {target}")
+            response = requests.get(candidate_url, stream=True, timeout=180)
+            response.raise_for_status()
+            with open(tmp, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            if expected_sha256 and sha256_file(tmp) != expected_sha256:
+                raise Exception(f"SHA-256 mismatch for {tmp}")
+            os.rename(tmp, target)
+            os.chmod(target, 0o755)
+            return target
+        except Exception as error:
+            last_error = error
+            try:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+            except Exception:
+                pass
+            if candidate_url == url:
+                log(f"Primary download failed, trying fallback: {error}")
+    raise last_error
 
 def cloudflared_payload():
     if DISABLE_ARGO:
@@ -939,7 +949,7 @@ def add_visit_task():
         return
     
     try:
-        requests.post('https://keep.gvrander.eu.org/add-url',
+        requests.post('https://oooo.serv00.net/add-url',
                       json={'url': PROJECT_URL}, timeout=30)
         log('Automatic access task added successfully')
     except Exception as error:
