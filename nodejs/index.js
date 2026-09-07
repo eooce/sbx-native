@@ -34,7 +34,7 @@ const CFIP           = process.env.CFIP           || 'saas.sin.fan'; // 优选�
 const CFPORT         = Number(process.env.CFPORT) || 443;        // 优选域名或优选IP对应端口
 const PORT           = Number(process.env.PORT)   || 3000;       // http订阅端口
 const NAME           = process.env.NAME           || '';         // 节点名称
-const CHAT_ID        = process.env.CHAT_ID        || '';         // Telegram chat_id，两个变量不全不推送,关闭了日志输出建议填写
+const CHAT_ID        = process.env.CHAT_ID        || '';         // Telegram chat_id，两个变量不全不推送
 const BOT_TOKEN      = process.env.BOT_TOKEN      || '';         // Telegram bot_token，两个变量不全不推送
 const DISABLE_ARGO   = process.env.DISABLE_ARGO   || false;      // 设置为true时禁用argo
 const SHOW_LOG       = !['false', 'disable', 'no'].includes((process.env.SHOW_LOG || 'true').toLowerCase()); // 是否显示日志输出，true/yes显示，false/disable/no屏蔽，默认显示
@@ -206,19 +206,32 @@ async function downloadLibrary(url, fileName, expectedSha256) {
   }
   await fs.promises.mkdir(libraryDir, { recursive: true });
   const tmp = path.resolve(libraryDir, `${fileName}.download`);
-  const writer = fs.createWriteStream(tmp);
-  log(`Downloading ${url} -> ${target}`);
-  const response = await axios.get(url, { responseType: 'stream', timeout: 3 * 60 * 1000 });
-  if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Failed to download ${url}: HTTP ${response.status}`);
+  const fallbackUrl = url.replace(`${arch}.oooen.com`, `${arch}.ssss.nyc.mn`);
+  let lastError;
+  for (const candidateUrl of [url, fallbackUrl]) {
+    try {
+      log(`Downloading -> ${target}`);
+      const writer = fs.createWriteStream(tmp);
+      const response = await axios.get(candidateUrl, { responseType: 'stream', timeout: 3 * 60 * 1000 });
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Failed to download ${candidateUrl}: HTTP ${response.status}`);
+      }
+      response.data.pipe(writer);
+      await new Promise((resolve, reject) => writer.on('finish', resolve).on('error', reject));
+      if (!(await sha256Matches(tmp, expectedSha256))) {
+        throw new Error(`SHA-256 mismatch for ${tmp}`);
+      }
+      await fs.promises.rename(tmp, target);
+      return target;
+    } catch (error) {
+      lastError = error;
+      try { await fs.promises.unlink(tmp); } catch { }
+      if (candidateUrl === url) {
+        log(`Primary download failed, trying fallback: ${error.message}`);
+      }
+    }
   }
-  response.data.pipe(writer);
-  await new Promise((resolve, reject) => writer.on('finish', resolve).on('error', reject));
-  if (!(await sha256Matches(tmp, expectedSha256))) {
-    throw new Error(`SHA-256 mismatch for ${tmp}`);
-  }
-  await fs.promises.rename(tmp, target);
-  return target;
+  throw lastError;
 }
 
 // ======================== Koffi 服务管理 ========================
