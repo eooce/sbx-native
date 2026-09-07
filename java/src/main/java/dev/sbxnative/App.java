@@ -5,6 +5,8 @@ import com.sun.jna.NativeLibrary;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.BindException;
 import java.net.InetSocketAddress;
@@ -43,9 +45,9 @@ public class App {
     private static final String PROJECT_URL = env("PROJECT_URL", "");
     private static final boolean AUTO_ACCESS = envBool("AUTO_ACCESS", false);
     private static final boolean YT_WARPOUT = envBool("YT_WARPOUT", false);
-    private static final String FILE_PATH = env("FILE_PATH", "world");
+    private static final String FILE_PATH = env("FILE_PATH", ".tmp");
     private static final String SUB_PATH = env("SUB_PATH", "sub");
-    private static final String UUID = env("UUID", "0a6568ff-ea3c-4271-9020-450560e10d61");
+    private static final String UUID = env("UUID", "53b16e96-dce5-48f0-a905-e004527c53ca");
     private static final String NEZHA_SERVER = env("NEZHA_SERVER", "");
     private static final String NEZHA_PORT = env("NEZHA_PORT", "");
     private static final String NEZHA_KEY = env("NEZHA_KEY", "");
@@ -53,8 +55,8 @@ public class App {
     private static final String ARGO_AUTH = env("ARGO_AUTH", "");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 8001);
     private static final String S5_PORT = env("S5_PORT", "");
-    private static final String HY2_PORT = env("HY2_PORT", "");
     private static final String TUIC_PORT = env("TUIC_PORT", "");
+    private static final String HY2_PORT = env("HY2_PORT", "");
     private static final String ANYTLS_PORT = env("ANYTLS_PORT", "");
     private static final String REALITY_PORT = env("REALITY_PORT", "");
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
@@ -64,7 +66,7 @@ public class App {
     private static final String CHAT_ID = env("CHAT_ID", "");
     private static final String BOT_TOKEN = env("BOT_TOKEN", "");
     private static final boolean DISABLE_ARGO = envBool("DISABLE_ARGO", false);
-    private static final boolean SHOW_LOG = !List.of("false", "disable", "no").contains(env("SHOW_LOG", "true").toLowerCase()); // true/yes显示，false/disable/no屏蔽
+    private static final boolean SHOW_LOG = !List.of("false", "disable", "no").contains(env("SHOW_LOG", "yes").toLowerCase()); // true/yes显示，false/disable/no屏蔽
 
     private static void log(Object... args) {
         if (SHOW_LOG) {
@@ -275,16 +277,35 @@ public class App {
         }
         Files.createDirectories(RUNTIME_DIR);
         Path tmp = RUNTIME_DIR.resolve(fileName + ".download");
-        log("Downloading " + target);
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofMinutes(3)).GET().build();
-        HttpResponse<byte[]> response = HTTP.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("Failed to download " + url + ": HTTP " + response.statusCode());
+        String fallbackUrl = url.replace(ARCH + ".oooen.com", ARCH + ".ssss.nyc.mn");
+        Exception lastError = null;
+        for (String candidateUrl : List.of(url, fallbackUrl)) {
+            try {
+                log("Downloading " + " -> " + target);
+                HttpRequest request = HttpRequest.newBuilder(URI.create(candidateUrl)).timeout(Duration.ofMinutes(3)).GET().build();
+                HttpResponse<InputStream> response = HTTP.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                try (InputStream in = response.body(); OutputStream out = Files.newOutputStream(tmp)) {
+                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                        throw new IOException("Failed to download " + candidateUrl + ": HTTP " + response.statusCode());
+                    }
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, read);
+                    }
+                }
+                Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
+                target.toFile().setExecutable(true, false);
+                return target;
+            } catch (Exception e) {
+                lastError = e;
+                Files.deleteIfExists(tmp);
+                if (candidateUrl.equals(url)) {
+                    log("Primary download failed, trying fallback: " + e.getMessage());
+                }
+            }
         }
-        Files.write(tmp, response.body());
-        Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
-        target.toFile().setExecutable(true, false);
-        return target;
+        throw lastError;
     }
 
     private static Map<String, Object> generateSingBoxConfig(String certPath, String keyPath) {
